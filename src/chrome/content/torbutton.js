@@ -8,7 +8,7 @@
 //       http://kb.mozillazine.org/Links_to_local_pages_don%27t_work
 
 let { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
-let { showDialog } = Cu.import("resource://torbutton/modules/utils.js", {});
+let { get_general_useragent_locale, showDialog, show_torbrowser_manual } = Cu.import("resource://torbutton/modules/utils.js", {});
 let { getLocale, unescapeTorString } = Cu.import("resource://torbutton/modules/utils.js", {});
 let SecurityPrefs = Cu.import("resource://torbutton/modules/security-prefs.js", {});
 let NoScriptControl = Cu.import("resource://torbutton/modules/noscript-control.js", {});
@@ -448,7 +448,6 @@ var torbutton_abouttor_message_handler = {
     return {
       torOn: torbutton_tor_check_ok(),
       updateNeeded: torbutton_update_is_needed(),
-      showManual: torbutton_show_torbrowser_manual(),
       toolbarButtonXPos: torbutton_get_toolbarbutton_xpos()
     };
   },
@@ -464,7 +463,7 @@ var torbutton_abouttor_message_handler = {
 };
 
 function torbutton_should_prompt_for_language_preference() {
-  return torbutton_get_general_useragent_locale().substring(0, 2) != "en" &&
+  return get_general_useragent_locale().substring(0, 2) != "en" &&
         !m_tb_prefs.getBoolPref("extensions.torbutton.prompted_language");
 }
 
@@ -810,21 +809,6 @@ function torbutton_update_toolbutton()
                         : "torbutton.panel.label.disabled";
   o_toolbutton.setAttribute("tooltiptext",
                             torbutton_get_property_string(tooltipKey));
-}
-
-// Bug 1506 P3: Support code for language+uagent spoofing
-function torbutton_get_general_useragent_locale() {
-   try {
-        const locale = getLocale();
-        if (/chrome:\/\//.test(locale)) {
-            return m_tb_prefs.getComplexValue("intl.locale.requested",
-                       Components.interfaces.nsIPrefLocalizedString).data;
-        }
-        return locale;
-    } catch(err) {
-        torbutton_log(4, "Error while getting locale" + err);
-        return 'en-US';
-    }
 }
 
 // Bug 1506 P4: Control port interaction. Needed for New Identity.
@@ -2363,20 +2347,13 @@ function torbutton_update_noscript_button()
   }, 0);
 }
 
-// Returns true if we should show the tor browser manual.
-function torbutton_show_torbrowser_manual() {
-  let availableLocales = ["de", "en", "es", "fr", "nl", "pt", "tr", "vi", "zh"];
-  let shortLocale = torbutton_get_general_useragent_locale().substring(0, 2);
-  return availableLocales.indexOf(shortLocale) >= 0;
-}
-
 // Makes sure the item in the Help Menu and the link in about:tor
 // for the Tor Browser User Manual are only visible when
-// torbutton_show_torbrowser_manual() returns true.
+// show_torbrowser_manual() returns true.
 function torbutton_init_user_manual_links() {
   let menuitem = document.getElementById("torBrowserUserManual");
   bindPrefAndInit("intl.locale.requested", val => {
-    menuitem.hidden = !torbutton_show_torbrowser_manual();
+    menuitem.hidden = !show_torbrowser_manual();
     torbutton_abouttor_message_handler.updateAllOpenPages();
   });
 }
