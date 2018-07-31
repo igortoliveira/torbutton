@@ -20,7 +20,7 @@ var {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 
 
 Cu.import("resource://gre/modules/Services.jsm");
-let { bindPrefAndInit } = Cu.import("resource://torbutton/modules/utils.js", {});
+let { bindPrefAndInit, show_torbrowser_manual } = Cu.import("resource://torbutton/modules/utils.js", {});
 
 
 var AboutTorListener = {
@@ -102,7 +102,7 @@ var AboutTorListener = {
     else
       body.removeAttribute("torNeedsUpdate");
 
-    if (aData.showManual)
+    if (show_torbrowser_manual())
       body.setAttribute("showmanual", "yes");
     else
       body.removeAttribute("showmanual");
