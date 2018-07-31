@@ -7,6 +7,9 @@ const Cu = Components.utils;
 // ### Import Mozilla Services
 Cu.import("resource://gre/modules/Services.jsm");
 
+let logger = Cc["@torproject.org/torbutton-logger;1"]
+               .getService(Components.interfaces.nsISupports).wrappedJSObject;
+
 // ## Pref utils
 
 // __prefs__. A shortcut to Mozilla Services.prefs.
@@ -205,6 +208,29 @@ var unescapeTorString = function(str) {
   return _torControl._strUnescape(str);
 };
 
+// Bug 1506 P3: Support code for language+uagent spoofing
+var get_general_useragent_locale = () => {
+  try {
+    const locale = getLocale();
+    if (/chrome:\/\//.test(locale)) {
+      return prefs.getComplexValue("intl.locale.requested",
+        Components.interfaces.nsIPrefLocalizedString).data;
+    }
+    return locale;
+  } catch(err) {
+    logger.eclog(3, "Unable to get the browser default locale, setting en-US as default");
+    return 'en-US';
+  }
+}
+
+// Returns true if we should show the tor browser manual.
+var show_torbrowser_manual = () => {
+  let availableLocales = ["de", "en", "es", "fr", "nl", "pt", "tr", "vi", "zh"];
+  let shortLocale = get_general_useragent_locale().substring(0, 2);
+  return availableLocales.indexOf(shortLocale) >= 0;
+}
+
+
 // Export utility functions for external use.
-let EXPORTED_SYMBOLS = ["bindPref", "bindPrefAndInit", "getEnv", "getLocale",
-                        "getPrefValue", "observe", "showDialog", "unescapeTorString"];
+let EXPORTED_SYMBOLS = ["bindPref", "bindPrefAndInit", "getEnv", "get_general_useragent_locale", "getLocale",
+                        "getPrefValue", "observe", "showDialog", "show_torbrowser_manual", "unescapeTorString"];
