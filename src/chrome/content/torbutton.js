@@ -232,6 +232,10 @@ function torbutton_init_toolbutton()
     }
 }
 
+function torbutton_is_mobile() {
+    return Services.appinfo.OS === "Android";
+}
+
 // Bug 1506 P2-P4: This code sets some version variables that are irrelevant.
 // It does read out some important environment variables, though. It is
 // called once per browser window.. This might belong in a component.
@@ -399,15 +403,27 @@ function torbutton_init() {
     torbutton_update_toolbutton();
     torbutton_notify_if_update_needed();
 
-    createTorCircuitDisplay(m_tb_control_ipc_file, m_tb_control_host,
-                            m_tb_control_port, m_tb_control_pass,
-                            "extensions.torbutton.display_circuit");
+    try {
+        createTorCircuitDisplay(m_tb_control_ipc_file, m_tb_control_host,
+                                m_tb_control_port, m_tb_control_pass,
+                               "extensions.torbutton.display_circuit");
+    } catch(e) {
+        torbutton_log(4, "Error creating the tor circuit display " + e);
+    }
 
-    torbutton_init_user_manual_links();
+    try {
+        torbutton_init_user_manual_links();
+    } catch(e) {
+        torbutton_log(4, "Error loading the user manual " + e);
+    }
 
     // Arrange for our about:tor content script to be loaded in each frame.
     window.messageManager.loadFrameScript(
               "chrome://torbutton/content/aboutTor/aboutTor-content.js", true);
+
+    if (torbutton_is_mobile()) {
+        torbutton_abouttor_message_handler.updateAllOpenPages();
+    }
 
     torbutton_log(3, 'init completed');
 }
@@ -437,6 +453,7 @@ var torbutton_abouttor_message_handler = {
   // not working.
   get chromeData() {
     return {
+      mobile: torbutton_is_mobile(),
       torOn: torbutton_tor_check_ok()
     };
   }
@@ -601,7 +618,7 @@ function torbutton_check_for_update() {
 function torbutton_show_sec_slider_notification() {
   // Show the notification about the new security slider.
   if (m_tb_prefs.
-      getBoolPref("extensions.torbutton.show_slider_notification")) {
+      getBoolPref("extensions.torbutton.show_slider_notification") && !torbutton_is_mobile()) {
     let sb = torbutton_get_stringbundle();
     let button_label =
       torbutton_get_property_string("torbutton.slider_notification_button");
@@ -1936,7 +1953,7 @@ function showSecurityPreferencesPanel(chromeWindow) {
 }
 
 function setupPreferencesForMobile() {
-  if (Services.appinfo.OS !== "Android") {
+  if (!torbutton_is_mobile()) {
     return;
   }
 

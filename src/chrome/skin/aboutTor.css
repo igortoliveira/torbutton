@@ -198,6 +198,8 @@ body:not([showmanual]) .showForManual {
   width: 100%;
   max-width: 1624px;    /* room for 14 of the widest circles */
   overflow: hidden;
+  position: absolute;
+  bottom: 0px;
 }
 
 .onion-pattern-row {
@@ -270,3 +272,38 @@ body:not([showmanual]) .showForManual {
   height: 50px;
   border-radius: 50px 50px 0 0;
 }
+
+/*
+ * Mobile specific css
+ */
+
+.torcontent-logo {
+  display: none;
+}
+
+body[mobile] .torstatus-version,
+body[mobile] .searchbox,
+body[mobile] .top .heading2,
+#bottom {
+  display: none;
+}
+
+body[mobile] .top {
+  white-space: normal;
+  margin-top: 0px !important;
+}
+
+body[mobile] .torcontent-logo {
+  display: block;
+  margin-top: 20px;
+  width: 50%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body[mobile] .top .heading1 {
+  font-size: 62px;
+  line-height: 1.1
+}
+
